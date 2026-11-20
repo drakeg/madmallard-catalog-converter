@@ -1,0 +1,2 @@
+# Release policy
+Semantic versioning. Patch: compatible fixes; minor: compatible features; major: breaking API/data/workflow changes or first stable 1.0. Before 1.0, breaking changes use documented minor releases. Publish after a useful milestone with green CI, browser checks, dependency/license review and release notes; no artificial release per commit. No release has been published. Roll back static deployments by deploying the prior commit; there is no server database to migrate.

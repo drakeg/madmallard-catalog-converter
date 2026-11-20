@@ -1,0 +1,26 @@
+{
+  "name": "madmallard-catalog-converter",
+  "version": "0.1.0",
+  "description": "Browser-local supplier catalog PDF and CSV review",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/notices.js",
+    "preview": "vite preview",
+    "test": "node --test tests/model.test.js",
+    "test:browser": "playwright test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "papaparse": "5.7.1",
+    "pdfjs-dist": "6.5.438",
+    "vite": "8.3.8"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "pdf-lib": "1.17.1"
+  },
+  "private": true
+}

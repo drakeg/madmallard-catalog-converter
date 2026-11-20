@@ -1,0 +1,2 @@
+# Contributing
+Open an issue with scope and acceptance criteria. Assign features to an active Sprint or backlog; break/fix can proceed immediately. Branch from main and submit a PR with validation and limitations. Run npm ci, npm test, npm run build, npm audit --omit=dev and python3 scripts/check_docs.py. Never commit real supplier data. Use synthetic fixtures. Keep badges and docs current. Continue ready work without routine Sprint confirmations; preserve branch protections and user control of merges.

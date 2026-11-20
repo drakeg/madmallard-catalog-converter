@@ -1,0 +1,7 @@
+name: madmallard-catalog-converter
+services:
+  web:
+    build: .
+    ports:
+      - "${CATALOG_PORT:-18880}:8080"
+    restart: unless-stopped

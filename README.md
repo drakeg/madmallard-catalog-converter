@@ -1,0 +1,29 @@
+# Mad Mallard Catalog Converter
+
+[![JavaScript](https://img.shields.io/badge/JavaScript-browser-F7DF1E?logo=javascript)](src/app.js) [![Vite](https://img.shields.io/badge/Vite-build-646CFF?logo=vite)](package.json) [![PDF.js](https://img.shields.io/badge/PDF.js-local_extraction-red)](THIRD_PARTY.md)
+
+[![CI](https://github.com/drakeg/madmallard-catalog-converter/actions/workflows/ci.yml/badge.svg)](https://github.com/drakeg/madmallard-catalog-converter/actions/workflows/ci.yml) [![Pages](https://github.com/drakeg/madmallard-catalog-converter/actions/workflows/pages.yml/badge.svg)](https://github.com/drakeg/madmallard-catalog-converter/actions/workflows/pages.yml) [![License](https://img.shields.io/github/license/drakeg/madmallard-catalog-converter)](LICENSE)
+
+[![Issues](https://img.shields.io/github/issues/drakeg/madmallard-catalog-converter)](https://github.com/drakeg/madmallard-catalog-converter/issues) [![PRs](https://img.shields.io/github/issues-pr/drakeg/madmallard-catalog-converter)](https://github.com/drakeg/madmallard-catalog-converter/pulls) [![Contributions](https://img.shields.io/badge/Contributions-welcome-green)](CONTRIBUTING.md)
+
+Independent browser-local supplier PDF/CSV review prototype. Select a text PDF or CSV, map extracted columns, edit and verify rows, then download reviewed or exception CSV files. No file content is uploaded or persisted. Reload clears the workspace. No Python backend is included: PDF.js enables static GitHub Pages hosting.
+
+## Run
+
+```sh
+npm ci
+npm test
+npm run dev -- --port 18880
+npm run build
+npm run preview -- --host 0.0.0.0 --port 18880
+# Optional Docker serving after build:
+docker compose up --build -d
+```
+
+GitHub Pages publishes dist/ from main using Actions; relative asset URLs support project subpaths. vercel.json provides an alternative deployment. Pages is only for a noncommercial testing prototype, not paid SaaS or checkout. Files remain local, but hosting providers receive normal page requests. No analytics or external CDNs are used.
+
+## Boundaries
+
+10 MB, 20 PDF pages and 500 rows (plus a header). PDFs are grouped by text baseline; complex tables, merged/multiline cells and scanned images need manual handling or a later backend. Headers are extracted too: keep them unchecked. Remapping resets verification. Each edit invalidates verification. Export of reviewed rows excludes unchecked, duplicate or invalid rows. Price validation accepts nonnegative decimals without symbols; source currency must be verified manually. CSV formula-looking cells are prefixed with an apostrophe. No import into customer inventory is performed.
+
+See SPRINTS.md, BACKLOG.md, PILOT.md, SECURITY.md and THIRD_PARTY.md. Never infer customer demand from the demo.
