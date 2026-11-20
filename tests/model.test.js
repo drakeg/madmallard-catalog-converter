@@ -1,4 +1,4 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {parseCsv,mapRows,warnings,exportCsv,exportExceptions,pdfLines} from '../src/model.js';
+import {test} from 'node:test';import assert from 'node:assert/strict';import {parseCsv,mapRows,warnings,exportCsv,exportExceptions,pdfLines,skipPdfPageHeaders} from '../src/model.js';
 test('quoted CSV and duplicate/invalid prices are surfaced',()=>{const raw=parseCsv('sku,description,price,unit\nA,"Filter, blue",12.50,each\nA,Other,free,each');const rows=mapRows(raw.slice(1),{sku:0,description:1,price:2,unit:3});assert.equal(rows[0].description,'Filter, blue');assert.ok(warnings(rows[1],rows).length>=2);});
 test('CSV output neutralizes formula cells',()=>{assert.match(exportCsv([{sku:'=SUM(A1)',description:'x',price:'1',unit:'each',source:'page 1'}]),/'=SUM/);});
 test('PDF text lines retain page reference and x order',()=>{const rows=pdfLines([{str:'19.95',transform:[1,0,0,1,300,100]},{str:'RV-1',transform:[1,0,0,1,20,100]}],2);assert.deepEqual(rows,[{cells:['RV-1','19.95'],source:'page 2'}]);});
@@ -18,4 +18,19 @@ test('PDF page ordering and separate adjacent rows remain stable',()=>{
  const item=(str,x,y,width)=>({str,width,transform:[1,0,0,1,x,y]});
  const result=pdfLines([item('Bottom',10,60,36),item('Top',10,100,20),item('Part',33,100,25)],2);
  assert.deepEqual(result,[{cells:['Top Part'],source:'page 2'},{cells:['Bottom'],source:'page 2'}]);
+});
+
+test('PDF page header opt-in skips only the first extracted line of each page',()=>{
+ const raw=[
+  {source:'page 1',cells:['SKU','Price']},
+  {source:'page 1',cells:['A','1.00']},
+  {source:'page 2',cells:['SKU','Price']},
+  {source:'page 2',cells:['B','2.00']},
+  {source:'row 1',cells:['CSV','3.00']}
+ ];
+ assert.deepEqual(skipPdfPageHeaders(raw).map(r=>r.cells[0]),['A','B','CSV']);
+ assert.equal(raw.length,5,'source rows must not be mutated');
+});
+test('header control never drops the only row from unrelated CSV input',()=>{
+ assert.deepEqual(skipPdfPageHeaders([{source:'row 1',cells:['SKU']}]),[{source:'row 1',cells:['SKU']}]);
 });
