@@ -28,7 +28,17 @@ export function pdfLines(items,page){
   return {cells,source:'page '+page};
  });
 }
-// Explicitly opt-in: the first extracted line of each PDF page may be a product.\nexport function skipPdfPageHeaders(raw){\n const encountered=new Set();\n return raw.filter(row=>{\n  if(!/^page \\d+$/.test(row.source))return true;\n  if(encountered.has(row.source))return true;\n  encountered.add(row.source);\n  return false;\n });\n}\nexport function mapRows(raw,mapping){return raw.map((r,i)=>Object.assign({id:i,source:r.source,verified:false},Object.fromEntries(fields.map(f=>[f,r.cells[mapping[f]]||'']))));}
+// Explicitly opt-in: the first extracted line of each PDF page may be a product.
+export function skipPdfPageHeaders(raw){
+ const encountered=new Set();
+ return raw.filter(row=>{
+  if(!/^page \d+$/.test(row.source))return true;
+  if(encountered.has(row.source))return true;
+  encountered.add(row.source);
+  return false;
+ });
+}
+export function mapRows(raw,mapping){return raw.map((r,i)=>Object.assign({id:i,source:r.source,verified:false},Object.fromEntries(fields.map(f=>[f,r.cells[mapping[f]]||'']))));}
 export function warnings(row,rows){const w=[];if(!row.sku.trim())w.push('Missing SKU');if(!row.description.trim())w.push('Missing description');if(!/^\d+(?:\.\d{1,2})?$/.test(row.price.trim()))w.push('Price must be a nonnegative decimal, without currency symbols');if(row.sku&&rows.filter(r=>r.sku.trim()===row.sku.trim()).length>1)w.push('Duplicate SKU');return w;}
 export function safeCell(value){return /^[\s]*[=+@-]/.test(value)?"'"+value:value;}
 export function exportCsv(rows){return Papa.unparse({fields:[...fields,'source'],data:rows.map(r=>[...fields.map(f=>safeCell(r[f])),safeCell(r.source)])},{newline:'\r\n'});}
