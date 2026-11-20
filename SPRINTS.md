@@ -5,7 +5,7 @@
 - [x] Validation, verification gate, reviewed/exception export and reset
 - [x] CI, Pages workflow, Vercel alternative and optional Docker serving
 - [x] Browser PDF/CSV workflow tests passed on connected Mac (Chrome)
-- [ ] Hosted Pages subpath acceptance
+- [x] Hosted Pages subpath: PDF/CSV selection, verification, download, reset; no page errors or upload POSTs
 - [x] Exception export includes reasons; rows can be removed; browser tests added to CI
 ## Sprint 1 — Reliable layouts
 - [ ] Explicit column-position template and header/continuation handling

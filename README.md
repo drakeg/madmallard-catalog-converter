@@ -1,12 +1,12 @@
 # Mad Mallard Catalog Converter
 
-[![JavaScript](https://img.shields.io/badge/JavaScript-browser-F7DF1E?logo=javascript)](src/app.js) [![Vite](https://img.shields.io/badge/Vite-build-646CFF?logo=vite)](package.json) [![PDF.js](https://img.shields.io/badge/PDF.js-local_extraction-red)](THIRD_PARTY.md)
-
-[![Docker](https://img.shields.io/badge/Docker-configured-2496ED?logo=docker)](Dockerfile) [![Vercel](https://img.shields.io/badge/Vercel-configured-black?logo=vercel)](vercel.json)
+[![JavaScript](https://img.shields.io/badge/JavaScript-browser-F7DF1E?logo=javascript)](src/app.js) [![Vite](https://img.shields.io/badge/Vite-build-646CFF?logo=vite)](package.json) [![PDF.js](https://img.shields.io/badge/PDF.js-local_extraction-red)](THIRD_PARTY.md) [![Docker](https://img.shields.io/badge/Docker-configured-2496ED?logo=docker)](Dockerfile) [![Vercel](https://img.shields.io/badge/Vercel-configured-black?logo=vercel)](vercel.json)
 
 [![CI](https://github.com/drakeg/madmallard-catalog-converter/actions/workflows/ci.yml/badge.svg)](https://github.com/drakeg/madmallard-catalog-converter/actions/workflows/ci.yml) [![Pages](https://github.com/drakeg/madmallard-catalog-converter/actions/workflows/pages.yml/badge.svg)](https://github.com/drakeg/madmallard-catalog-converter/actions/workflows/pages.yml) [![License](https://img.shields.io/github/license/drakeg/madmallard-catalog-converter)](LICENSE)
 
 [![Issues](https://img.shields.io/github/issues/drakeg/madmallard-catalog-converter)](https://github.com/drakeg/madmallard-catalog-converter/issues) [![PRs](https://img.shields.io/github/issues-pr/drakeg/madmallard-catalog-converter)](https://github.com/drakeg/madmallard-catalog-converter/pulls) [![Contributions](https://img.shields.io/badge/Contributions-welcome-green)](CONTRIBUTING.md)
+
+Test site: https://drakeg.github.io/madmallard-catalog-converter/
 
 Independent browser-local supplier PDF/CSV review prototype. Select a text PDF or CSV, map extracted columns, edit and verify rows, then download reviewed or exception CSV files. No file content is uploaded or persisted. Reload clears the workspace. No Python backend is included: PDF.js enables static GitHub Pages hosting.
 
