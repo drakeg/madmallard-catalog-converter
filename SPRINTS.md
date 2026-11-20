@@ -8,7 +8,7 @@
 - [x] Hosted Pages subpath: PDF/CSV selection, verification, download, reset; no page errors or upload POSTs
 - [x] Exception export includes reasons; rows can be removed; browser tests added to CI
 ## Sprint 1 — Reliable layouts (active)\n- [x] Reconstruct adjacent PDF text fragments within a measured cell, preserving column gaps; add unit regression coverage
-- [ ] Explicit column-position template and header/continuation handling
+- [x] Optional per-PDF-page first-line exclusion with re-verification and regression coverage\n- [ ] Explicit column-position template and continuation handling
 - [ ] Saved local mapping profiles with explicit opt-in
 - [ ] Better per-page source preview and PDF comparison fixtures
 ## Sprint 2 — Paid pilot validation
