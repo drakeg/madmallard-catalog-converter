@@ -10,7 +10,7 @@
 ## Sprint 1 — Reliable layouts (active)\n- [x] Reconstruct adjacent PDF text fragments within a measured cell, preserving column gaps; add unit regression coverage
 - [x] Optional per-PDF-page first-line exclusion with re-verification and regression coverage\n- [ ] Explicit column-position template and continuation handling
 - [ ] Saved local mapping profiles with explicit opt-in
-- [ ] Better per-page source preview and PDF comparison fixtures
+- [x] Guided sample and export handoff instructions with browser coverage\n- [ ] Better per-page source preview and PDF comparison fixtures
 ## Sprint 2 — Paid pilot validation
 - [ ] Authorized sample from a qualified buyer
 - [ ] Measure correction time and extraction accuracy
