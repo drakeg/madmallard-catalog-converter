@@ -13,7 +13,7 @@ test('text PDF upload extracts positioned cells with source page',async({page})=
  const pdf=await PDFDocument.create();const p=pdf.addPage();const font=await pdf.embedFont(StandardFonts.Helvetica);
  for(const [text,x]of [['RV-9',30],['Filter',150],['19.95',300],['each',400]])p.drawText(text,{x,y:700,size:12,font});
  await page.goto('/');await page.locator('#file').setInputFiles({name:'supplier.pdf',mimeType:'application/pdf',buffer:Buffer.from(await pdf.save())});
- await expect(page.locator('#rows tr')).toHaveCount(1);await expect(page.getByLabel('sku 0',{exact:true})).toHaveValue('RV-9');await expect(page.getByLabel('price 0',{exact:true})).toHaveValue('19.95');await expect(page.locator('#rows')).toContainText('page 1');await page.locator('#clear').click();await page.locator('#sample').click();await expect(page.locator('#rows tr')).toHaveCount(3);expect(errors).toEqual([]);
+ await expect(page.locator('#rows tr')).toHaveCount(1);await expect(page.getByLabel('sku 0',{exact:true})).toHaveValue('RV-9');await expect(page.getByLabel('price 0',{exact:true})).toHaveValue('19.95');await expect(page.locator('#rows')).toContainText('page 1');await page.locator('#clear').click();await page.locator('#sample').click();await expect(page.locator('#rows tr')).toHaveCount(2);expect(errors).toEqual([]);
 });
 
 test('PDF header skipping is opt-in and re-applying requires verification',async({page})=>{
@@ -27,4 +27,19 @@ test('PDF header skipping is opt-in and re-applying requires verification',async
  await page.locator('#skip-headers').uncheck();await expect(page.locator('#rows tr')).toHaveCount(2);
  await expect(page.locator('#download')).toBeDisabled();
  await page.locator('#clear').click();await expect(page.locator('#header-control')).toBeHidden();
+});
+
+test('guided sample is loaded in place, with actionable export instructions',async({page})=>{
+ await page.goto('/');
+ await expect(page.getByRole('heading',{name:'How to use this converter'})).toBeVisible();
+ await page.getByRole('button',{name:'Try sample data (opens here)'}).click();
+ await expect(page.locator('#rows tr')).toHaveCount(2);
+ await expect(page.locator('#status')).toContainText('Two fictional sample products');
+ await expect(page.locator('#download')).toBeDisabled();
+ await page.locator('.export-help summary').click();
+ await expect(page.getByText('only verified and valid products',{exact:false})).toBeVisible();
+ await page.getByLabel('Verify row 1 0',{exact:true}).check();
+ const d=page.waitForEvent('download');await page.locator('#download').click();
+ expect((await d).suggestedFilename()).toBe('reviewed-catalog.csv');
+ await expect(page.locator('#status')).toContainText('does not update inventory');
 });
