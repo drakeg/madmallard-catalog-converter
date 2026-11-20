@@ -15,3 +15,16 @@ test('text PDF upload extracts positioned cells with source page',async({page})=
  await page.goto('/');await page.locator('#file').setInputFiles({name:'supplier.pdf',mimeType:'application/pdf',buffer:Buffer.from(await pdf.save())});
  await expect(page.locator('#rows tr')).toHaveCount(1);await expect(page.getByLabel('sku 0',{exact:true})).toHaveValue('RV-9');await expect(page.getByLabel('price 0',{exact:true})).toHaveValue('19.95');await expect(page.locator('#rows')).toContainText('page 1');await page.locator('#clear').click();await page.locator('#sample').click();await expect(page.locator('#rows tr')).toHaveCount(3);expect(errors).toEqual([]);
 });
+
+test('PDF header skipping is opt-in and re-applying requires verification',async({page})=>{
+ const pdf=await PDFDocument.create();const p=pdf.addPage();const font=await pdf.embedFont(StandardFonts.Helvetica);
+ for(const [text,x,y] of [['SKU',30,740],['Description',150,740],['Price',300,740],['Unit',400,740],['RV-10',30,700],['Hose',150,700],['8.50',300,700],['each',400,700]])p.drawText(text,{x,y,size:12,font});
+ await page.goto('/');await page.locator('#file').setInputFiles({name:'supplier.pdf',mimeType:'application/pdf',buffer:Buffer.from(await pdf.save())});
+ await expect(page.locator('#rows tr')).toHaveCount(2);
+ await page.locator('#skip-headers').check();await expect(page.locator('#rows tr')).toHaveCount(1);
+ await expect(page.getByLabel('sku 0',{exact:true})).toHaveValue('RV-10');
+ await page.getByLabel('Verify page 1 0',{exact:true}).check();await expect(page.locator('#download')).toBeEnabled();
+ await page.locator('#skip-headers').uncheck();await expect(page.locator('#rows tr')).toHaveCount(2);
+ await expect(page.locator('#download')).toBeDisabled();
+ await page.locator('#clear').click();await expect(page.locator('#header-control')).toBeHidden();
+});
