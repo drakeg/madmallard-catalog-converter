@@ -4,3 +4,18 @@ test('CSV output neutralizes formula cells',()=>{assert.match(exportCsv([{sku:'=
 test('PDF text lines retain page reference and x order',()=>{const rows=pdfLines([{str:'19.95',transform:[1,0,0,1,300,100]},{str:'RV-1',transform:[1,0,0,1,20,100]}],2);assert.deepEqual(rows,[{cells:['RV-1','19.95'],source:'page 2'}]);});
 
 test('exceptions retain reasons and verification status',()=>{const csv=exportExceptions([{sku:'',description:'x',price:'bad',unit:'each',source:'page 1',verified:false}]);assert.match(csv,/review_status/);assert.match(csv,/Missing SKU/);assert.match(csv,/unverified/);});
+
+test('PDF split text runs in one cell are reconstructed without merging columns',()=>{
+ const item=(str,x,width,y=100)=>({str,width,transform:[1,0,0,1,x,y]});
+ const result=pdfLines([item('Filter',120,30),item('blue',154,22),item('RV-3',20,30),item('19.95',300,30)],1);
+ assert.deepEqual(result,[{cells:['RV-3','Filter blue','19.95'],source:'page 1'}]);
+});
+test('PDF fragments lacking measured widths remain separate rather than guessing',()=>{
+ const item=(str,x)=>({str,transform:[1,0,0,1,x,100]});
+ assert.deepEqual(pdfLines([item('A',10),item('B',13)],1)[0].cells,['A','B']);
+});
+test('PDF page ordering and separate adjacent rows remain stable',()=>{
+ const item=(str,x,y,width)=>({str,width,transform:[1,0,0,1,x,y]});
+ const result=pdfLines([item('Bottom',10,60,36),item('Top',10,100,20),item('Part',33,100,25)],2);
+ assert.deepEqual(result,[{cells:['Top Part'],source:'page 2'},{cells:['Bottom'],source:'page 2'}]);
+});

@@ -9,7 +9,24 @@ export function parseCsv(text){
 export function pdfLines(items,page){
  const lines=[];
  for(const item of items){if(!item.str?.trim())continue;const y=item.transform[5];let line=lines.find(l=>Math.abs(l.y-y)<3);if(!line){line={y,items:[]};lines.push(line);}line.items.push(item);}
- return lines.sort((a,b)=>b.y-a.y).map(l=>({cells:l.items.sort((a,b)=>a.transform[4]-b.transform[4]).map(i=>i.str.trim()),source:'page '+page}));
+ return lines.sort((a,b)=>b.y-a.y).map(l=>{
+  const ordered=l.items.sort((a,b)=>a.transform[4]-b.transform[4]);
+  const cells=[];let previous=null;
+  for(const item of ordered){
+   const value=item.str.trim();if(!value)continue;
+   const x=item.transform[4],width=Number(item.width);
+   const previousEnd=previous&&Number.isFinite(previous.width)&&previous.width>0
+    ? previous.transform[4]+previous.width : null;
+   // PDF.js may split a single cell into multiple text runs. Only join runs
+   // when both have measurable geometry and the gap is small; never infer
+   // missing prices or join columns from ordering alone.
+   if(previousEnd!==null&&Number.isFinite(width)&&width>0&&x-previousEnd>=-2&&x-previousEnd<=8){
+    cells[cells.length-1]+=(x-previousEnd>2?' ':'')+value;
+   }else cells.push(value);
+   previous=item;
+  }
+  return {cells,source:'page '+page};
+ });
 }
 export function mapRows(raw,mapping){return raw.map((r,i)=>Object.assign({id:i,source:r.source,verified:false},Object.fromEntries(fields.map(f=>[f,r.cells[mapping[f]]||'']))));}
 export function warnings(row,rows){const w=[];if(!row.sku.trim())w.push('Missing SKU');if(!row.description.trim())w.push('Missing description');if(!/^\d+(?:\.\d{1,2})?$/.test(row.price.trim()))w.push('Price must be a nonnegative decimal, without currency symbols');if(row.sku&&rows.filter(r=>r.sku.trim()===row.sku.trim()).length>1)w.push('Duplicate SKU');return w;}
