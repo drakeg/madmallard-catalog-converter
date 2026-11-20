@@ -10,6 +10,16 @@ Test site: https://drakeg.github.io/madmallard-catalog-converter/
 
 Independent browser-local supplier PDF/CSV review prototype. Select a text PDF or CSV, map extracted columns, edit and verify rows, then download reviewed or exception CSV files. No file content is uploaded or persisted. Reload clears the workspace. No Python backend is included: PDF.js enables static GitHub Pages hosting.
 
+## Guided demo and CSV handoff
+
+1. Open the [test site](https://drakeg.github.io/madmallard-catalog-converter/) and select **Try sample data (opens here)**. Two fictional products appear directly in the review table; no sample file download or second upload is required.
+2. For your own PDF or CSV, select the file, map columns to SKU, description, price and unit, and apply the mapping. Remove headers and non-product rows.
+3. Compare every SKU and supplier price against the original document, correct errors, and check **Verified?** for confirmed products. Edits reset verification.
+4. **Download reviewed CSV** creates `reviewed-catalog.csv` with only verified, valid products. Open it with Excel, LibreOffice Calc or Google Sheets. Match the columns to your target inventory import template, then import manually.
+5. **Download exceptions CSV** creates `needs-review.csv` with unverified or invalid rows, including review status, warnings and source location. Use this for corrections, not as an import-ready catalog.
+
+**Important:** A CSV is the final spreadsheet output, not a file that must be uploaded back into this converter. This app does not integrate with inventory systems, and synthetic sample data must not be imported into actual inventory.
+
 ## Run
 
 ```sh
