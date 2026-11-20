@@ -2,6 +2,8 @@
 
 [![JavaScript](https://img.shields.io/badge/JavaScript-browser-F7DF1E?logo=javascript)](src/app.js) [![Vite](https://img.shields.io/badge/Vite-build-646CFF?logo=vite)](package.json) [![PDF.js](https://img.shields.io/badge/PDF.js-local_extraction-red)](THIRD_PARTY.md)
 
+[![Docker](https://img.shields.io/badge/Docker-configured-2496ED?logo=docker)](Dockerfile) [![Vercel](https://img.shields.io/badge/Vercel-configured-black?logo=vercel)](vercel.json)
+
 [![CI](https://github.com/drakeg/madmallard-catalog-converter/actions/workflows/ci.yml/badge.svg)](https://github.com/drakeg/madmallard-catalog-converter/actions/workflows/ci.yml) [![Pages](https://github.com/drakeg/madmallard-catalog-converter/actions/workflows/pages.yml/badge.svg)](https://github.com/drakeg/madmallard-catalog-converter/actions/workflows/pages.yml) [![License](https://img.shields.io/github/license/drakeg/madmallard-catalog-converter)](LICENSE)
 
 [![Issues](https://img.shields.io/github/issues/drakeg/madmallard-catalog-converter)](https://github.com/drakeg/madmallard-catalog-converter/issues) [![PRs](https://img.shields.io/github/issues-pr/drakeg/madmallard-catalog-converter)](https://github.com/drakeg/madmallard-catalog-converter/pulls) [![Contributions](https://img.shields.io/badge/Contributions-welcome-green)](CONTRIBUTING.md)
@@ -19,6 +21,8 @@ npm run preview -- --host 0.0.0.0 --port 18880
 # Optional Docker serving after build:
 docker compose up --build -d
 ```
+
+Central standards adoption is recorded in STANDARDS.md.
 
 GitHub Pages publishes dist/ from main using Actions; relative asset URLs support project subpaths. vercel.json provides an alternative deployment. Pages is only for a noncommercial testing prototype, not paid SaaS or checkout. Files remain local, but hosting providers receive normal page requests. No analytics or external CDNs are used.
 
