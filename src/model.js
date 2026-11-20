@@ -15,3 +15,5 @@ export function mapRows(raw,mapping){return raw.map((r,i)=>Object.assign({id:i,s
 export function warnings(row,rows){const w=[];if(!row.sku.trim())w.push('Missing SKU');if(!row.description.trim())w.push('Missing description');if(!/^\d+(?:\.\d{1,2})?$/.test(row.price.trim()))w.push('Price must be a nonnegative decimal, without currency symbols');if(row.sku&&rows.filter(r=>r.sku.trim()===row.sku.trim()).length>1)w.push('Duplicate SKU');return w;}
 export function safeCell(value){return /^[\s]*[=+@-]/.test(value)?"'"+value:value;}
 export function exportCsv(rows){return Papa.unparse({fields:[...fields,'source'],data:rows.map(r=>[...fields.map(f=>safeCell(r[f])),safeCell(r.source)])},{newline:'\r\n'});}
+
+export function exportExceptions(rows,allRows=rows){return Papa.unparse({fields:[...fields,'source','review_status','warnings'],data:rows.map(r=>[...fields.map(f=>safeCell(r[f])),safeCell(r.source),r.verified?'verified':'unverified',warnings(r,allRows).join('; ')])},{newline:'\r\n'});}

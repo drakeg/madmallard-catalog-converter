@@ -4,7 +4,9 @@
 - [x] PDF/CSV selection, local extraction, mapping and editable review
 - [x] Validation, verification gate, reviewed/exception export and reset
 - [x] CI, Pages workflow, Vercel alternative and optional Docker serving
-- [ ] Browser workflow tests and deployed Pages verification
+- [x] Browser PDF/CSV workflow tests passed on connected Mac (Chrome)
+- [ ] Hosted Pages subpath acceptance
+- [x] Exception export includes reasons; rows can be removed; browser tests added to CI
 ## Sprint 1 — Reliable layouts
 - [ ] Explicit column-position template and header/continuation handling
 - [ ] Saved local mapping profiles with explicit opt-in

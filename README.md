@@ -24,6 +24,6 @@ GitHub Pages publishes dist/ from main using Actions; relative asset URLs suppor
 
 ## Boundaries
 
-10 MB, 20 PDF pages and 500 rows (plus a header). PDFs are grouped by text baseline; complex tables, merged/multiline cells and scanned images need manual handling or a later backend. Headers are extracted too: keep them unchecked. Remapping resets verification. Each edit invalidates verification. Export of reviewed rows excludes unchecked, duplicate or invalid rows. Price validation accepts nonnegative decimals without symbols; source currency must be verified manually. CSV formula-looking cells are prefixed with an apostrophe. No import into customer inventory is performed.
+10 MB, 20 PDF pages and 500 rows (plus a header). PDFs are grouped by text baseline; complex tables, merged/multiline cells and scanned images need manual handling or a later backend. Headers are extracted too: keep them unchecked or remove them. Exception CSVs include validation reasons and review status. Remapping resets verification. Each edit invalidates verification. Export of reviewed rows excludes unchecked, duplicate or invalid rows. Price validation accepts nonnegative decimals without symbols; source currency must be verified manually. CSV formula-looking cells are prefixed with an apostrophe. No import into customer inventory is performed.
 
 See SPRINTS.md, BACKLOG.md, PILOT.md, SECURITY.md and THIRD_PARTY.md. Never infer customer demand from the demo.
