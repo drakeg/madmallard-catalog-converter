@@ -49,6 +49,6 @@ test('wrong workspace, duplicate IDs and missing row IDs abort import',()=>{
  const csv=exportExceptions(rows,rows,'workspace');
  assert.throws(()=>prepareExceptionImport(csv,rows,'other'),/do not match/);
  assert.throws(()=>prepareExceptionImport(csv.replace('row 1','row 2'),rows,'workspace'),/do not match/);
- assert.throws(()=>prepareExceptionImport(csv+csv.split('\r\n')[1]+'\r\n',rows,'workspace'),/repeated row ID/);
+ assert.throws(()=>prepareExceptionImport(csv.trimEnd()+'\r\n'+csv.trimEnd().split('\r\n')[1]+'\r\n',rows,'workspace'),/repeated row ID/);
  assert.throws(()=>prepareExceptionImport('sku,price\nA,1',rows,'workspace'),/Not a supported/);
 });
