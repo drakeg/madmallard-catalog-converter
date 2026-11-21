@@ -43,4 +43,35 @@ export function warnings(row,rows){const w=[];if(!row.sku.trim())w.push('Missing
 export function safeCell(value){return /^[\s]*[=+@-]/.test(value)?"'"+value:value;}
 export function exportCsv(rows){return Papa.unparse({fields:[...fields,'source'],data:rows.map(r=>[...fields.map(f=>safeCell(r[f])),safeCell(r.source)])},{newline:'\r\n'});}
 
-export function exportExceptions(rows,allRows=rows){return Papa.unparse({fields:[...fields,'source','review_status','warnings'],data:rows.map(r=>[...fields.map(f=>safeCell(r[f])),safeCell(r.source),r.verified?'verified':'unverified',warnings(r,allRows).join('; ')])},{newline:'\r\n'});}
+export function exportExceptions(rows,allRows=rows,workspaceId=''){
+ return Papa.unparse({
+  fields:['workspace_id','row_id',...fields,'source','review_status','warnings'],
+  data:rows.map(r=>[workspaceId,String(r.id ?? ''),...fields.map(f=>safeCell(r[f])),safeCell(r.source),r.verified?'verified':'unverified',warnings(r,allRows).join('; ')])
+ },{newline:'\r\n'});
+}
+
+// Validate the complete correction file before changing any row. Identity is
+// workspace + immutable row ID + source; the SKU may legitimately be wrong.
+export function prepareExceptionImport(csv,rows,workspaceId){
+ const parsed=Papa.parse(csv,{header:true,skipEmptyLines:'greedy'});
+ if(parsed.errors.length)throw Error('Corrections CSV could not be parsed: '+parsed.errors[0].message);
+ const required=['workspace_id','row_id',...fields,'source'];
+ if(required.some(k=>!parsed.meta.fields?.includes(k)))throw Error('Not a supported corrections CSV. Download a fresh needs-review.csv from this workspace.');
+ if(!parsed.data.length)throw Error('Corrections CSV contains no product rows.');
+ if(parsed.data.length>500)throw Error('Corrections CSV exceeds 500 product rows.');
+ const ids=new Set(),current=new Map(rows.map(r=>[String(r.id),r]));
+ const changes=[];
+ for(const item of parsed.data){
+  const id=String(item.row_id);
+  if(!id || ids.has(id))throw Error('Corrections CSV has a missing or repeated row ID.');
+  ids.add(id);
+  const original=current.get(id);
+  if(!workspaceId || item.workspace_id!==workspaceId || !original || item.source!==original.source)
+   throw Error('Corrections do not match the current workspace and source rows. Reload the original catalog and export a fresh exceptions file.');
+  const next=Object.fromEntries(fields.map(k=>[k,item[k]]));
+  if(fields.some(k=>typeof next[k]!=='string'))throw Error('A product field is missing from the corrections CSV.');
+  const modified=fields.filter(k=>next[k]!==original[k]).map(k=>({field:k,before:original[k],after:next[k]}));
+  if(modified.length)changes.push({id:original.id,source:original.source,modified,next});
+ }
+ return changes;
+}

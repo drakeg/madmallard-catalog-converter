@@ -43,3 +43,27 @@ test('guided sample is loaded in place, with actionable export instructions',asy
  expect((await d).suggestedFilename()).toBe('reviewed-catalog.csv');
  await expect(page.locator('#status')).toContainText('does not update inventory');
 });
+
+test('exception CSV is corrected, previewed and safely re-imported',async({page})=>{
+ await page.goto('/');
+ await page.locator('#sample').click();
+ const first=page.locator('#rows tr').first();
+ await first.getByLabel('price 0',{exact:true}).fill('bad');
+ await first.getByLabel('price 0',{exact:true}).press('Tab');
+ const downloadPromise=page.waitForEvent('download');
+ await page.locator('#exceptions').click();
+ const download=await downloadPromise;
+ const stream=await download.createReadStream();
+ const chunks=[];for await(const chunk of stream)chunks.push(chunk);
+ let csv=Buffer.concat(chunks).toString('utf8');
+ expect(csv).toContain('workspace_id,row_id');
+ csv=csv.replace('bad','29.95');
+ await page.locator('#correction-file').setInputFiles({name:'needs-review.csv',mimeType:'text/csv',buffer:Buffer.from(csv)});
+ await expect(page.locator('#correction-preview')).toBeVisible();
+ await expect(page.locator('#correction-changes')).toContainText('29.95');
+ await expect(first.getByLabel('price 0',{exact:true})).toHaveValue('bad');
+ await page.locator('#apply-corrections').click();
+ await expect(first.getByLabel('price 0',{exact:true})).toHaveValue('29.95');
+ await expect(page.locator('#correction-status')).toContainText('Verification was reset');
+ await expect(page.locator('#download')).toBeDisabled();
+});
