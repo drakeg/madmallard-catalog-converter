@@ -16,9 +16,9 @@ Independent browser-local supplier PDF/CSV review prototype. Select a text PDF o
 2. For your own PDF or CSV, select the file, map columns to SKU, description, price and unit, and apply the mapping. Remove headers and non-product rows.
 3. Compare every SKU and supplier price against the original document, correct errors, and check **Verified?** for confirmed products. Edits reset verification.
 4. **Download reviewed CSV** creates `reviewed-catalog.csv` with only verified, valid products. Open it with Excel, LibreOffice Calc or Google Sheets. Match the columns to your target inventory import template, then import manually.
-5. **Download exceptions CSV** creates `needs-review.csv` with unverified or invalid rows, including review status, warnings and source location. Use this for corrections, not as an import-ready catalog.
+5. **Download exceptions CSV** creates `needs-review.csv` with unverified or invalid rows, including review status, warnings, source, `workspace_id` and `row_id`. Edit SKU, description, price or unit in a spreadsheet, save as CSV, and **Upload corrected needs-review.csv** to the same open browser workspace. Preview the differences, then click **Apply corrections**. Corrected rows remain unverified until reviewed against the source. Do not change identity columns or close/reload the workspace before importing. Mismatched/duplicate IDs reject the entire file; no partial update occurs. This exceptions CSV is not an inventory import file.
 
-**Important:** A CSV is the final spreadsheet output, not a file that must be uploaded back into this converter. This app does not integrate with inventory systems, and synthetic sample data must not be imported into actual inventory.
+**Important:** The reviewed CSV is final output; the exceptions CSV can be re-uploaded for corrections. This app does not integrate with inventory systems, and synthetic sample data must not be imported into actual inventory.
 
 ## Run
 
