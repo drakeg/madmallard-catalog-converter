@@ -20,8 +20,8 @@ $('download').onclick=()=>download(rows.filter(r=>r.verified&&!warnings(r,rows).
 $('exceptions').onclick=()=>download(rows.filter(r=>!r.verified||warnings(r,rows).length),'needs-review.csv',true);
 
 $('correction-file').onchange=async()=>{
- clearPending();
  const file=$('correction-file').files[0];
+ clearPending();
  if(!file)return;
  try{
   if(file.size>10*1024*1024)throw Error('Corrections CSV exceeds 10 MB.');
