@@ -8,6 +8,6 @@
 | P1 | Layout templates | Known supplier layout maps deterministically with exceptions |
 | P0 | Guided demo and export help | Explain sample, verification, CSV output and manual inventory import |
 | P0 | Exceptions CSV round-trip | User edits exceptions offline, previews and safely applies corrections without automatic verification |
-| P1 | Per-page preview | Reviewer can compare source without losing edits |
+| P1 | Per-page preview | PDF.js canvas source and row-linked page navigation; no uploads (implemented in Sprint 1) |
 | P2 | Optional pdfplumber backend | Separate deployment, explicit uploads and retention; never required by static prototype |
 No outreach, customer data collection or paid integrations are authorized by this backlog.
