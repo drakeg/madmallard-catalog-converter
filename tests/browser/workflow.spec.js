@@ -67,3 +67,20 @@ test('exception CSV is corrected, previewed and safely re-imported',async({page}
  await expect(page.locator('#correction-status')).toContainText('Verification was reset');
  await expect(page.locator('#download')).toBeDisabled();
 });
+
+test('PDF source preview renders pages and row navigation stays browser-local',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const pdf=await PDFDocument.create();const font=await pdf.embedFont(StandardFonts.Helvetica);
+ for(const [sku,price]of [['RV-100','12.50'],['RV-200','25.00']]){
+  const p=pdf.addPage();for(const [text,x]of [[sku,30],['Filter',150],[price,300],['each',400]])p.drawText(text,{x,y:700,size:12,font});
+ }
+ await page.goto('/');await expect(page.locator('#pdf-preview')).toBeHidden();
+ await page.locator('#file').setInputFiles({name:'supplier.pdf',mimeType:'application/pdf',buffer:Buffer.from(await pdf.save())});
+ await expect(page.locator('#pdf-preview')).toBeVisible();
+ await expect(page.locator('#pdf-page')).toHaveText('Page 1 of 2');
+ await expect.poll(()=>page.locator('#pdf-canvas').evaluate(el=>el.width)).toBeGreaterThan(100);
+ await page.getByRole('button',{name:'Next page'}).click();await expect(page.locator('#pdf-page')).toHaveText('Page 2 of 2');
+ await page.getByRole('button',{name:'View source page 1 for row 0'}).click();await expect(page.locator('#pdf-page')).toHaveText('Page 1 of 2');
+ await page.locator('#clear').click();await expect(page.locator('#pdf-preview')).toBeHidden();
+ await page.locator('#sample').click();await expect(page.locator('#pdf-preview')).toBeHidden();expect(errors).toEqual([]);
+});
