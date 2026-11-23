@@ -14,7 +14,7 @@
 - [x] Correction CSV round-trip with stable workspace/row ID, preview and verification reset 
 - [ ] Saved local mapping profiles with explicit opt-in
 - [x] Guided sample and export handoff instructions with browser coverage 
-- [ ] Better per-page source preview and PDF comparison fixtures
+- [x] PDF.js canvas source preview, page navigation and row-to-source-page links with synthetic browser tests
 ## Sprint 2 — Paid pilot validation
 - [ ] Authorized sample from a qualified buyer
 - [ ] Measure correction time and extraction accuracy
