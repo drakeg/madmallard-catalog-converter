@@ -84,3 +84,25 @@ test('PDF source preview renders pages and row navigation stays browser-local',a
  await page.locator('#clear').click();await expect(page.locator('#pdf-preview')).toBeHidden();
  await page.locator('#sample').click();await expect(page.locator('#pdf-preview')).toBeHidden();expect(errors).toEqual([]);
 });
+
+test('supplier profile is explicitly saved, restored and deleted without storing catalog content',async({page})=>{
+ await page.goto('/');
+ await page.locator('#sample').click();
+ await page.locator('#profile-name').fill('RV Supplier A');
+ await page.locator('#save-profile').click();
+ await expect(page.locator('#profile-status')).toContainText('Saved locally');
+ const stored=await page.evaluate(()=>localStorage.getItem('madmallard.catalog.mapping-profiles.v1'));
+ expect(stored).toContain('RV Supplier A');expect(stored).not.toContain('Water filter');
+ await page.locator('#map-sku').selectOption('1');
+ await page.locator('#apply').click();
+ await expect(page.getByLabel('sku 0',{exact:true})).toHaveValue('Water filter');
+ await page.locator('#profile-select').selectOption('RV Supplier A');
+ await page.locator('#load-profile').click();
+ await expect(page.getByLabel('sku 0',{exact:true})).toHaveValue('RV-001');
+ await expect(page.locator('#download')).toBeDisabled();
+ await page.reload();await page.locator('#sample').click();
+ await expect(page.locator('#profile-select')).toContainText('RV Supplier A');
+ await page.locator('#profile-select').selectOption('RV Supplier A');
+ await page.locator('#delete-profile').click();
+ await expect(page.locator('#profile-select')).not.toContainText('RV Supplier A');
+});
