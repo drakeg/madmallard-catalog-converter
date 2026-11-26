@@ -38,6 +38,30 @@ export function skipPdfPageHeaders(raw){
   return false;
  });
 }
+
+export const PROFILE_STORAGE_KEY='madmallard.catalog.mapping-profiles.v1';
+export function validateMappingProfile(profile,columnCount){
+ if(!profile||typeof profile!=='object'||profile.version!==1)throw Error('Unsupported mapping profile.');
+ if(typeof profile.name!=='string'||!profile.name.trim()||profile.name.length>60)throw Error('Profile name must be 1–60 characters.');
+ if(!['pdf','csv'].includes(profile.format))throw Error('Unsupported profile format.');
+ if(typeof profile.skipHeaders!=='boolean')throw Error('Invalid header option.');
+ if(profile.format==='csv'&&profile.skipHeaders)throw Error('CSV profiles cannot skip PDF page headers.');
+ if(!profile.mapping||fields.some(f=>!Number.isSafeInteger(profile.mapping[f])||profile.mapping[f]<0||profile.mapping[f]>=columnCount))throw Error('Profile refers to columns not present in this catalog.');
+ return {version:1,name:profile.name.trim(),format:profile.format,skipHeaders:profile.skipHeaders,mapping:Object.fromEntries(fields.map(f=>[f,profile.mapping[f]]))};
+}
+export function parseMappingProfiles(json){
+ if(json==null||json==='')return [];
+ const value=JSON.parse(json);
+ if(!Array.isArray(value)||value.length>20)throw Error('Saved profiles have an invalid format.');
+ const names=new Set();
+ return value.map(p=>{
+  const profile=validateMappingProfile(p,501);
+  const normalized=profile.name.toLocaleLowerCase();
+  if(names.has(normalized))throw Error('Duplicate saved mapping profiles.');
+  names.add(normalized);return profile;
+ });
+}
+
 export function mapRows(raw,mapping){return raw.map((r,i)=>Object.assign({id:i,source:r.source,verified:false},Object.fromEntries(fields.map(f=>[f,r.cells[mapping[f]]||'']))));}
 export function warnings(row,rows){const w=[];if(!row.sku.trim())w.push('Missing SKU');if(!row.description.trim())w.push('Missing description');if(!/^\d+(?:\.\d{1,2})?$/.test(row.price.trim()))w.push('Price must be a nonnegative decimal, without currency symbols');if(row.sku&&rows.filter(r=>r.sku.trim()===row.sku.trim()).length>1)w.push('Duplicate SKU');return w;}
 export function safeCell(value){return /^[\s]*[=+@-]/.test(value)?"'"+value:value;}

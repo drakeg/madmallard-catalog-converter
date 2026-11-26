@@ -12,7 +12,7 @@
 - [x] Optional per-PDF-page first-line exclusion with re-verification and regression coverage 
 - [ ] Explicit column-position template and continuation handling
 - [x] Correction CSV round-trip with stable workspace/row ID, preview and verification reset 
-- [ ] Saved local mapping profiles with explicit opt-in
+- [x] Saved browser-local mapping profiles with explicit opt-in, format checks, deletion and browser regression tests
 - [x] Guided sample and export handoff instructions with browser coverage 
 - [x] PDF.js canvas source preview, page navigation and row-to-source-page links with synthetic browser tests
 ## Sprint 2 — Paid pilot validation

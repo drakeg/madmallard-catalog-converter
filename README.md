@@ -20,6 +20,10 @@ Independent browser-local supplier PDF/CSV review prototype. Select a text PDF o
 
 **Important:** The reviewed CSV is final output; the exceptions CSV can be re-uploaded for corrections. This app does not integrate with inventory systems, and synthetic sample data must not be imported into actual inventory.
 
+## Saved supplier mapping profiles
+
+After loading supplier data, enter a profile name under **Reusable supplier mapping profiles**, then choose **Save mapping locally**. This is an explicit opt-in action: only the name, PDF/CSV format, numeric column positions, and PDF-header preference are stored in this browser's local storage. Catalog contents, SKU, prices, review state and source PDF are **not** saved. Select a profile and **Apply saved mapping** for another catalog in the same format. Applying it resets verification. You can **Delete profile** any time. Profiles are limited to 20 and cannot be used when their selected column positions exceed the current file's columns; choose a new mapping instead. Browser data clearing also removes profiles.
+
 ## Run
 
 ```sh
