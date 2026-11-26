@@ -1,16 +1,38 @@
 import * as pdfjs from 'pdfjs-dist';
 import worker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-import {fields,parseCsv,pdfLines,mapRows,warnings,exportCsv,exportExceptions,skipPdfPageHeaders,prepareExceptionImport} from './model.js';
+import {fields,parseCsv,pdfLines,mapRows,warnings,exportCsv,exportExceptions,skipPdfPageHeaders,prepareExceptionImport,PROFILE_STORAGE_KEY,validateMappingProfile,parseMappingProfiles} from './model.js';
 import './style.css';
 pdfjs.GlobalWorkerOptions.workerSrc=worker;
 const $=id=>document.getElementById(id);let raw=[],rows=[],busy=false,generation=0,sourceIsPdf=false,workspaceId='',pendingCorrections=[],previewPdf=null,previewTask=null,previewRender=null,previewRequest=0;
 function tell(s){$('status').textContent=s;}
+
+function sourceFormat(){return sourceIsPdf?'pdf':'csv';}
+function currentColumns(){return Math.max(4,...raw.map(r=>r.cells.length));}
+function currentMapping(){return Object.fromEntries(fields.map(f=>[f,Number($('map-'+f).value)]));}
+function listProfiles(){
+ try{return parseMappingProfiles(localStorage.getItem(PROFILE_STORAGE_KEY));}
+ catch(e){$('profile-status').textContent='Saved profiles could not be read: '+e.message;return null;}
+}
+function refreshProfiles(){
+ const select=$('profile-select');select.replaceChildren();
+ const blank=document.createElement('option');blank.value='';blank.textContent='Choose a saved profile';select.append(blank);
+ const profiles=listProfiles();if(!profiles)return;
+ for(const profile of profiles){
+  const option=document.createElement('option');option.value=profile.name;option.textContent=profile.name+' ('+profile.format.toUpperCase()+')';
+  option.disabled=profile.format!==sourceFormat();select.append(option);
+ }
+}
+function storeProfiles(profiles){
+ try{localStorage.setItem(PROFILE_STORAGE_KEY,JSON.stringify(profiles));refreshProfiles();return true;}
+ catch(e){$('profile-status').textContent='Could not save profiles on this device: '+e.message;return false;}
+}
+
 function clearPending(){pendingCorrections=[];$('correction-preview').hidden=true;$('correction-file').value='';$('correction-status').textContent='';}
 
 function resetPdfPreview(){previewRequest++;if(previewRender){previewRender.cancel();previewRender=null;}if(previewTask){previewTask.destroy().catch(()=>{});previewTask=null;}previewPdf=null;$('pdf-preview').hidden=true;$('pdf-canvas').width=0;$('pdf-canvas').height=0;$('pdf-page').textContent='';}
 async function renderSourcePage(pageNumber){if(!previewPdf)return;const n=Math.max(1,Math.min(previewPdf.numPages,Number(pageNumber)||1));const request=++previewRequest;if(previewRender){previewRender.cancel();previewRender=null;}$('pdf-page').textContent='Loading page '+n+' of '+previewPdf.numPages+'…';try{const page=await previewPdf.getPage(n);if(request!==previewRequest)return;const viewport=page.getViewport({scale:1});const maxWidth=Math.max(240,Math.min(680,$('pdf-canvas').parentElement.clientWidth-16));const scale=Math.min(1.7,maxWidth/viewport.width);const finalViewport=page.getViewport({scale});const canvas=$('pdf-canvas');canvas.width=Math.ceil(finalViewport.width);canvas.height=Math.ceil(finalViewport.height);previewRender=page.render({canvasContext:canvas.getContext('2d'),viewport:finalViewport});await previewRender.promise;if(request!==previewRequest)return;$('pdf-page').textContent='Page '+n+' of '+previewPdf.numPages;$('pdf-prev').disabled=n===1;$('pdf-next').disabled=n===previewPdf.numPages;$('pdf-preview').dataset.page=String(n);}catch(e){if(e?.name!=='RenderingCancelledException'&&request===previewRequest)$('pdf-page').textContent='Could not display page '+n;}finally{if(request===previewRequest)previewRender=null;}}
-function clear(){resetPdfPreview();clearPending();workspaceId='';generation++;raw=[];rows=[];sourceIsPdf=false;$('skip-headers').checked=false;$('header-control').hidden=true;$('review').hidden=true;$('rows').replaceChildren();$('mapping').replaceChildren();$('file').value='';tell('Workspace cleared. No data was stored.');}
-function load(data){workspaceId=crypto.randomUUID();clearPending();if(data.length>501)throw Error('Maximum 500 rows plus a header.');raw=data;const n=Math.max(4,...data.map(r=>r.cells.length));$('mapping').replaceChildren();fields.forEach((f,i)=>{const label=document.createElement('label');label.textContent=f;const select=document.createElement('select');select.id='map-'+f;for(let j=0;j<n;j++){const opt=document.createElement('option');opt.value=j;opt.textContent='Column '+(j+1)+' — '+(data[0]?.cells[j]||'empty').slice(0,35);select.append(opt);}select.value=i;label.append(select);$('mapping').append(label);});$('review').hidden=false;apply();}
+function clear(){resetPdfPreview();$('profile-controls').hidden=true;$('profile-status').textContent='';clearPending();workspaceId='';generation++;raw=[];rows=[];sourceIsPdf=false;$('skip-headers').checked=false;$('header-control').hidden=true;$('review').hidden=true;$('rows').replaceChildren();$('mapping').replaceChildren();$('file').value='';tell('Workspace cleared. No data was stored.');}
+function load(data){workspaceId=crypto.randomUUID();clearPending();if(data.length>501)throw Error('Maximum 500 rows plus a header.');raw=data;const n=Math.max(4,...data.map(r=>r.cells.length));$('mapping').replaceChildren();fields.forEach((f,i)=>{const label=document.createElement('label');label.textContent=f;const select=document.createElement('select');select.id='map-'+f;for(let j=0;j<n;j++){const opt=document.createElement('option');opt.value=j;opt.textContent='Column '+(j+1)+' — '+(data[0]?.cells[j]||'empty').slice(0,35);select.append(opt);}select.value=i;label.append(select);$('mapping').append(label);});$('review').hidden=false;$('profile-controls').hidden=false;refreshProfiles();apply();}
 function apply(){clearPending();workspaceId=crypto.randomUUID();const selected=sourceIsPdf&&$('skip-headers').checked?skipPdfPageHeaders(raw):raw;rows=mapRows(selected,Object.fromEntries(fields.map(f=>[f,Number($('map-'+f).value)])));render();tell('Rows loaded below. Check column mapping, review SKUs and prices, verify products, then download reviewed CSV.');}
 function summary(){const good=rows.filter(r=>r.verified&&!warnings(r,rows).length).length;$('summary').textContent=rows.length+' extracted rows · '+good+' verified and valid · '+(rows.length-good)+' needing attention';$('download').disabled=!good;}
 function render(){const tbody=$('rows');tbody.replaceChildren();for(const row of rows){const tr=document.createElement('tr');const td=document.createElement('td');const check=document.createElement('input');check.type='checkbox';check.checked=row.verified;check.setAttribute('aria-label','Verify '+row.source+' '+row.id);check.onchange=()=>{clearPending();row.verified=check.checked;summary();};td.append(check);tr.append(td);for(const f of fields){const cell=document.createElement('td');const input=document.createElement('input');input.value=row[f];input.setAttribute('aria-label',f+' '+row.id);input.onchange=()=>{clearPending();row[f]=input.value;row.verified=false;render();};cell.append(input);tr.append(cell);}const source=document.createElement('td');source.textContent=row.source;if(previewPdf&&/^page \d+$/.test(row.source)){const go=document.createElement('button');go.type='button';go.className='source-link';go.textContent='View page';go.setAttribute('aria-label','View source '+row.source+' for row '+row.id);go.onclick=()=>renderSourcePage(Number(row.source.slice(5)));source.append(go);}tr.append(source);const warning=document.createElement('td');warning.textContent=warnings(row,rows).join('; ');tr.append(warning);const removeCell=document.createElement('td');const remove=document.createElement('button');remove.textContent='Remove';remove.setAttribute('aria-label','Remove row '+row.id);remove.onclick=()=>{clearPending();rows=rows.filter(r=>r.id!==row.id);render();};removeCell.append(remove);tr.append(removeCell);tbody.append(tr);}summary();}
@@ -57,6 +79,36 @@ $('apply-corrections').onclick=()=>{
  $('correction-status').textContent=changes.length+' row(s) updated. Verification was reset for every changed product. Check warnings and compare corrected SKUs/prices with the source before approving export.';
 };
 $('cancel-corrections').onclick=()=>{clearPending();$('correction-status').textContent='Correction preview discarded. No products were changed.';};
+
+
+$('save-profile').onclick=()=>{
+ if(!raw.length)return;
+ const name=$('profile-name').value.trim();
+ try{
+  const profile=validateMappingProfile({version:1,name,format:sourceFormat(),mapping:currentMapping(),skipHeaders:sourceIsPdf&&$('skip-headers').checked},currentColumns());
+  const profiles=listProfiles();if(!profiles)return;
+  if(profiles.some(p=>p.name.toLocaleLowerCase()===profile.name.toLocaleLowerCase()))throw Error('That profile name already exists. Choose another name or delete the old profile.');
+  if(profiles.length>=20)throw Error('Maximum 20 profiles. Delete an old profile first.');
+  if(storeProfiles([...profiles,profile])){$('profile-select').value=profile.name;$('profile-status').textContent='Saved locally on this device. No catalog contents were stored.';}
+ }catch(e){$('profile-status').textContent='Profile not saved: '+e.message;}
+};
+$('load-profile').onclick=()=>{
+ const name=$('profile-select').value;if(!name||!raw.length)return;
+ try{
+  const profile=listProfiles()?.find(p=>p.name===name);if(!profile)throw Error('Select a saved profile.');
+  if(profile.format!==sourceFormat())throw Error('This profile belongs to another file type.');
+  const valid=validateMappingProfile(profile,currentColumns());
+  for(const f of fields)$('map-'+f).value=String(valid.mapping[f]);
+  $('skip-headers').checked=sourceIsPdf&&valid.skipHeaders;
+  apply();
+  $('profile-status').textContent='Applied '+valid.name+'. All rows require fresh verification. Review the supplier source before exporting.';
+ }catch(e){$('profile-status').textContent='Profile not applied: '+e.message;}
+};
+$('delete-profile').onclick=()=>{
+ const name=$('profile-select').value;if(!name)return;
+ const profiles=listProfiles();if(!profiles)return;
+ if(storeProfiles(profiles.filter(p=>p.name!==name)))$('profile-status').textContent='Deleted saved profile '+name+'. Catalog rows were not changed.';
+};
 
 $('pdf-prev').onclick=()=>renderSourcePage(Number($('pdf-preview').dataset.page||1)-1);
 $('pdf-next').onclick=()=>renderSourcePage(Number($('pdf-preview').dataset.page||1)+1);
