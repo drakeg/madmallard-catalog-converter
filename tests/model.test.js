@@ -1,4 +1,4 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {parseCsv,mapRows,warnings,exportCsv,exportExceptions,pdfLines,skipPdfPageHeaders,prepareExceptionImport} from '../src/model.js';
+import {test} from 'node:test';import assert from 'node:assert/strict';import {parseCsv,mapRows,warnings,exportCsv,exportExceptions,pdfLines,skipPdfPageHeaders,prepareExceptionImport,validateMappingProfile,parseMappingProfiles} from '../src/model.js';
 test('quoted CSV and duplicate/invalid prices are surfaced',()=>{const raw=parseCsv('sku,description,price,unit\nA,"Filter, blue",12.50,each\nA,Other,free,each');const rows=mapRows(raw.slice(1),{sku:0,description:1,price:2,unit:3});assert.equal(rows[0].description,'Filter, blue');assert.ok(warnings(rows[1],rows).length>=2);});
 test('CSV output neutralizes formula cells',()=>{assert.match(exportCsv([{sku:'=SUM(A1)',description:'x',price:'1',unit:'each',source:'page 1'}]),/'=SUM/);});
 test('PDF text lines retain page reference and x order',()=>{const rows=pdfLines([{str:'19.95',transform:[1,0,0,1,300,100]},{str:'RV-1',transform:[1,0,0,1,20,100]}],2);assert.deepEqual(rows,[{cells:['RV-1','19.95'],source:'page 2'}]);});
@@ -51,4 +51,14 @@ test('wrong workspace, duplicate IDs and missing row IDs abort import',()=>{
  assert.throws(()=>prepareExceptionImport(csv.replace('row 1','row 2'),rows,'workspace'),/do not match/);
  assert.throws(()=>prepareExceptionImport(csv.trimEnd()+'\r\n'+csv.trimEnd().split('\r\n')[1]+'\r\n',rows,'workspace'),/repeated row ID/);
  assert.throws(()=>prepareExceptionImport('sku,price\nA,1',rows,'workspace'),/Not a supported/);
+});
+
+test('mapping profiles validate types, column limits and names',()=>{
+ const p={version:1,name:' Supplier A ',format:'pdf',skipHeaders:true,mapping:{sku:0,description:1,price:2,unit:3}};
+ assert.equal(validateMappingProfile(p,4).name,'Supplier A');
+ assert.throws(()=>validateMappingProfile(p,3),/columns not present/);
+ assert.throws(()=>validateMappingProfile({...p,format:'csv'},4),/cannot skip/);
+ assert.throws(()=>validateMappingProfile({...p,mapping:{...p.mapping,price:-1}},4),/columns not present/);
+ assert.deepEqual(parseMappingProfiles(JSON.stringify([p]))[0].mapping,p.mapping);
+ assert.throws(()=>parseMappingProfiles(JSON.stringify([p,{...p,name:'supplier a'}])),/Duplicate/);
 });
