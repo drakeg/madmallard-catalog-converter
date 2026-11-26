@@ -16,7 +16,7 @@
   "dependencies": {
     "papaparse": "5.7.1",
     "pdfjs-dist": "6.5.438",
-    "vite": "8.3.8"
+    "vite": "8.4.0"
   },
   "devDependencies": {
     "@playwright/test": "1.65.1",
