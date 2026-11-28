@@ -5,7 +5,7 @@
 | P0 | Browser regression tests | review gate, edited verification reset, PDF and CSV |
 | P0 | PDF text-run reconstruction | Join adjacent measurable runs without silently joining separate columns; cover with synthetic tests |
 | P1 | PDF header option | User-controlled first-line exclusion on each PDF page; never silently drop source rows |
-| P1 | Saved supplier mapping profiles | Explicit opt-in browser-local save/load/delete, no product data, verification reset (implemented) |\n| P1 | Layout templates | Known supplier layout maps deterministically with exceptions |
+| P1 | Saved supplier mapping profiles | Explicit opt-in browser-local save/load/delete, no product data, verification reset (implemented) |\n| P1 | Layout templates | Opt-in X-coordinate boundaries and reusable supplier profiles (implemented); multi-line continuation handling remains |
 | P0 | Guided demo and export help | Explain sample, verification, CSV output and manual inventory import |
 | P0 | Exceptions CSV round-trip | User edits exceptions offline, previews and safely applies corrections without automatic verification |
 | P1 | Per-page preview | PDF.js canvas source and row-linked page navigation; no uploads (implemented in Sprint 1) |
