@@ -28,6 +28,41 @@ export function pdfLines(items,page){
   return {cells,source:'page '+page};
  });
 }
+
+export function validatePdfPositions(values){
+ if(!Array.isArray(values)||values.length!==4||values.some(v=>!Number.isFinite(v)||v<0||v>2000))throw Error('Enter four PDF X coordinates between 0 and 2000.');
+ if(values.some((v,i)=>i>0&&v<=values[i-1]))throw Error('PDF column starting positions must increase from left to right.');
+ return [...values];
+}
+// Place text using its original PDF X coordinate, not the number of
+// fragments emitted by PDF.js. This is intentionally opt-in.
+export function positionedPdfLines(items,page,starts){
+ validatePdfPositions(starts);
+ const groups=[];
+ for(const item of items){
+  if(!item.str?.trim())continue;
+  const x=Number(item.transform?.[4]),y=Number(item.transform?.[5]);
+  if(!Number.isFinite(x)||!Number.isFinite(y))continue;
+  let group=groups.find(g=>Math.abs(g.y-y)<3);
+  if(!group){group={y,items:[]};groups.push(group);}
+  group.items.push(item);
+ }
+ return groups.sort((a,b)=>b.y-a.y).map(group=>{
+  const cells=['','','',''];
+  const previous=[null,null,null,null];
+  for(const item of group.items.sort((a,b)=>a.transform[4]-b.transform[4])){
+   const x=item.transform[4];
+   let col=0;for(let i=1;i<4;i++)if(x>=starts[i])col=i;
+   const gap=previous[col]===null?0:x-previous[col];
+   const join=previous[col]!==null&&(gap>2?' ':'');
+   cells[col]+=join+item.str.trim();
+   const width=Number(item.width);
+   previous[col]=x+(Number.isFinite(width)&&width>0?width:0);
+  }
+  return {cells,source:'page '+page};
+ });
+}
+
 // Explicitly opt-in: the first extracted line of each PDF page may be a product.
 export function skipPdfPageHeaders(raw){
  const encountered=new Set();
@@ -46,8 +81,10 @@ export function validateMappingProfile(profile,columnCount){
  if(!['pdf','csv'].includes(profile.format))throw Error('Unsupported profile format.');
  if(typeof profile.skipHeaders!=='boolean')throw Error('Invalid header option.');
  if(profile.format==='csv'&&profile.skipHeaders)throw Error('CSV profiles cannot skip PDF page headers.');
+ if(profile.positions!==undefined && profile.format!=='pdf')throw Error('CSV profiles cannot use PDF positions.');
+ if(profile.positions!==undefined)validatePdfPositions(profile.positions);
  if(!profile.mapping||fields.some(f=>!Number.isSafeInteger(profile.mapping[f])||profile.mapping[f]<0||profile.mapping[f]>=columnCount))throw Error('Profile refers to columns not present in this catalog.');
- return {version:1,name:profile.name.trim(),format:profile.format,skipHeaders:profile.skipHeaders,mapping:Object.fromEntries(fields.map(f=>[f,profile.mapping[f]]))};
+ return {version:1,name:profile.name.trim(),format:profile.format,skipHeaders:profile.skipHeaders,mapping:Object.fromEntries(fields.map(f=>[f,profile.mapping[f]])),...(profile.positions?{positions:[...profile.positions]}:{})};
 }
 export function parseMappingProfiles(json){
  if(json==null||json==='')return [];
