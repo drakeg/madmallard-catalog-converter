@@ -24,6 +24,10 @@ Independent browser-local supplier PDF/CSV review prototype. Select a text PDF o
 
 After loading supplier data, enter a profile name under **Reusable supplier mapping profiles**, then choose **Save mapping locally**. This is an explicit opt-in action: only the name, PDF/CSV format, numeric column positions, and PDF-header preference are stored in this browser's local storage. Catalog contents, SKU, prices, review state and source PDF are **not** saved. Select a profile and **Apply saved mapping** for another catalog in the same format. Applying it resets verification. You can **Delete profile** any time. Profiles are limited to 20 and cannot be used when their selected column positions exceed the current file's columns; choose a new mapping instead. Browser data clearing also removes profiles.
 
+## Supplier PDF X-coordinate templates
+
+For supplier PDF catalogs with text fragments in irregular positions, load the PDF and open **PDF column-position template (advanced)**. Check **Use PDF X-coordinate boundaries** or enter the starting X coordinate of each column and select **Apply PDF column positions**. The four numeric boundaries are PDF coordinate units; each text fragment is assigned to the nearest column based on where it begins. Positions must increase from SKU through description, price and unit. All verification resets when a template is applied. Templates are opt-in and may require adjustment for each supplier layout. Save a profile while this mode is selected to remember the four positions for future supplier PDFs. No product data is stored in that profile. Multi-line wrapped descriptions remain a future enhancement. Verify against the source preview before export.
+
 ## Run
 
 ```sh

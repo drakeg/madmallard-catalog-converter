@@ -106,3 +106,25 @@ test('supplier profile is explicitly saved, restored and deleted without storing
  await page.locator('#delete-profile').click();
  await expect(page.locator('#profile-select')).not.toContainText('RV Supplier A');
 });
+
+test('PDF column-position template can reassemble split supplier fields and save a profile',async({page})=>{
+ const pdf=await PDFDocument.create();const p=pdf.addPage();const font=await pdf.embedFont(StandardFonts.Helvetica);
+ for(const [text,x]of [['RV-77',30],['Blue',150],['filter',190],['14.95',320],['each',430]])p.drawText(text,{x,y:700,size:12,font});
+ await page.goto('/');
+ await page.locator('#file').setInputFiles({name:'positioned.pdf',mimeType:'application/pdf',buffer:Buffer.from(await pdf.save())});
+ await expect(page.locator('#pdf-position-controls')).toBeVisible();
+ await page.locator('#apply-positions').click();
+ await expect(page.getByLabel('description 0',{exact:true})).toHaveValue('Blue filter');
+ await expect(page.getByLabel('price 0',{exact:true})).toHaveValue('14.95');
+ await page.locator('#profile-name').fill('Positioned supplier');
+ await page.locator('#save-profile').click();
+ const saved=await page.evaluate(()=>localStorage.getItem('madmallard.catalog.mapping-profiles.v1'));
+ expect(JSON.parse(saved)[0].positions).toEqual([0,120,280,380]);
+ await page.locator('#pdf-start-price').fill('50');
+ await page.locator('#apply-positions').click();
+ await expect(page.locator('#pdf-position-status')).toContainText('must increase');
+ await page.locator('#profile-select').selectOption('Positioned supplier');
+ await page.locator('#load-profile').click();
+ await expect(page.getByLabel('price 0',{exact:true})).toHaveValue('14.95');
+ await expect(page.locator('#download')).toBeDisabled();
+});

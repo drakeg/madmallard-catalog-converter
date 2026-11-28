@@ -1,4 +1,4 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {parseCsv,mapRows,warnings,exportCsv,exportExceptions,pdfLines,skipPdfPageHeaders,prepareExceptionImport,validateMappingProfile,parseMappingProfiles} from '../src/model.js';
+import {test} from 'node:test';import assert from 'node:assert/strict';import {parseCsv,mapRows,warnings,exportCsv,exportExceptions,pdfLines,skipPdfPageHeaders,prepareExceptionImport,validateMappingProfile,parseMappingProfiles,validatePdfPositions,positionedPdfLines} from '../src/model.js';
 test('quoted CSV and duplicate/invalid prices are surfaced',()=>{const raw=parseCsv('sku,description,price,unit\nA,"Filter, blue",12.50,each\nA,Other,free,each');const rows=mapRows(raw.slice(1),{sku:0,description:1,price:2,unit:3});assert.equal(rows[0].description,'Filter, blue');assert.ok(warnings(rows[1],rows).length>=2);});
 test('CSV output neutralizes formula cells',()=>{assert.match(exportCsv([{sku:'=SUM(A1)',description:'x',price:'1',unit:'each',source:'page 1'}]),/'=SUM/);});
 test('PDF text lines retain page reference and x order',()=>{const rows=pdfLines([{str:'19.95',transform:[1,0,0,1,300,100]},{str:'RV-1',transform:[1,0,0,1,20,100]}],2);assert.deepEqual(rows,[{cells:['RV-1','19.95'],source:'page 2'}]);});
@@ -61,4 +61,19 @@ test('mapping profiles validate types, column limits and names',()=>{
  assert.throws(()=>validateMappingProfile({...p,mapping:{...p.mapping,price:-1}},4),/columns not present/);
  assert.deepEqual(parseMappingProfiles(JSON.stringify([p]))[0].mapping,p.mapping);
  assert.throws(()=>parseMappingProfiles(JSON.stringify([p,{...p,name:'supplier a'}])),/Duplicate/);
+});
+
+test('PDF position template groups split fragments into semantic columns',()=>{
+ const item=(str,x,y=100,width=20)=>({str,width,transform:[1,0,0,1,x,y]});
+ const result=positionedPdfLines([item('19.95',310),item('blue',184),item('Filter',140),item('RV-10',20),item('each',420)],2,[0,120,280,380]);
+ assert.deepEqual(result,[{cells:['RV-10','Filter blue','19.95','each'],source:'page 2'}]);
+ assert.deepEqual(positionedPdfLines([item('RV-20',20,80)],1,[0,120,280,380])[0].cells,['RV-20','','','']);
+});
+test('PDF templates reject overlapping, missing and invalid positions',()=>{
+ assert.throws(()=>validatePdfPositions([0,120,120,380]),/increase/);
+ assert.throws(()=>validatePdfPositions([0,120,280]),/four/);
+ assert.throws(()=>validatePdfPositions([0,120,-1,380]),/between/);
+ const profile={version:1,name:'Supplier',format:'pdf',skipHeaders:false,positions:[0,120,280,380],mapping:{sku:0,description:1,price:2,unit:3}};
+ assert.deepEqual(validateMappingProfile(profile,4).positions,profile.positions);
+ assert.throws(()=>validateMappingProfile({...profile,format:'csv'},4),/CSV profiles cannot use/);
 });

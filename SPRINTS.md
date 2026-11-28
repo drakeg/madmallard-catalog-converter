@@ -10,7 +10,7 @@
 ## Sprint 1 — Reliable layouts (active) 
 - [x] Reconstruct adjacent PDF text fragments within a measured cell, preserving column gaps; add unit regression coverage
 - [x] Optional per-PDF-page first-line exclusion with re-verification and regression coverage 
-- [ ] Explicit column-position template and continuation handling
+- [x] Opt-in PDF X-coordinate column templates with saved profile integration and synthetic regression tests\n- [ ] Multi-line cell/continuation handling
 - [x] Correction CSV round-trip with stable workspace/row ID, preview and verification reset 
 - [x] Saved browser-local mapping profiles with explicit opt-in, format checks, deletion and browser regression tests
 - [x] Guided sample and export handoff instructions with browser coverage 
