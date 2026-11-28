@@ -54,7 +54,7 @@ export function positionedPdfLines(items,page,starts){
    const x=item.transform[4];
    let col=0;for(let i=1;i<4;i++)if(x>=starts[i])col=i;
    const gap=previous[col]===null?0:x-previous[col];
-   const join=previous[col]!==null&&(gap>2?' ':'');
+   const join=previous[col]===null?'':(gap>2?' ':'');
    cells[col]+=join+item.str.trim();
    const width=Number(item.width);
    previous[col]=x+(Number.isFinite(width)&&width>0?width:0);
